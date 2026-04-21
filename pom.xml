@@ -14,12 +14,13 @@
     <groupId>com.university</groupId>
     <artifactId>library-app</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <modules>
-        <module>book-service</module>
-        <module>auth-server</module>
-        <module>library-service</module>
         <module>library-shared</module>
+        <module>auth-server</module>
+        <module>book-service</module>
+        <module>library-service</module>
     </modules>
 
     <properties>

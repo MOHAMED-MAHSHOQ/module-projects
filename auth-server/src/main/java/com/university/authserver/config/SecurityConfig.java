@@ -36,9 +36,14 @@ public class SecurityConfig {
 
     @Bean @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(a -> a.anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults());
-        return http.build();
+        http.authorizeHttpRequests(a -> a
+                        .requestMatchers("/login").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/")
+                        .permitAll()
+                );        return http.build();
     }
 
     @Bean
@@ -75,4 +80,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthorizationServerSettings authorizationServerSettings() {
+        return AuthorizationServerSettings.builder()
+                .issuer("http://localhost:8080")
+                .build();
+    }
 }
