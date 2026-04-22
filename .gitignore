@@ -37,3 +37,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/library-ui/node_modules/
