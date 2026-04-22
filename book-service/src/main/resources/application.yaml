@@ -1,4 +1,8 @@
 spring:
+  security:
+    user:
+      name: library-service-account
+      password: super-secret-service-pass
   application:
     name: book-service
   datasource:

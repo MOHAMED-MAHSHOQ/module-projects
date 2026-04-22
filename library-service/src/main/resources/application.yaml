@@ -11,3 +11,6 @@ server:
 
 book-service:
   base-url: http://localhost:8082
+  credentials:
+    username: library-service-account
+    password: super-secret-service-pass
