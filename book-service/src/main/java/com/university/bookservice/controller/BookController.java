@@ -6,14 +6,15 @@ import com.university.shared.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class BookController {
 
-    static final String BOOK_PATH             = "/api/books";
-    private static final String BOOK_PATH_ID = BOOK_PATH+"/{id}";
+    static final String BOOK_PATH = "/api/books";
+    private static final String BOOK_PATH_ID = BOOK_PATH + "/{id}";
 
     private final BookService bookService;
 
@@ -22,35 +23,17 @@ public class BookController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Books fetched", bookService.getAllBooks()));
     }
 
-    @GetMapping(BOOK_PATH+"/available")
-    public ResponseEntity<ApiResponse<List<BookSummaryDto>>> getAvailableBooks() {
-        return ResponseEntity.ok(new ApiResponse<>(true, "Available books", bookService.getAvailableBooks()));
-    }
-
     @GetMapping(BOOK_PATH_ID)
     public ResponseEntity<ApiResponse<BookDto>> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Book found", bookService.getBookById(id)));
     }
 
-    @GetMapping(BOOK_PATH+"/search")
-    public ResponseEntity<ApiResponse<List<BookSummaryDto>>> searchBooks(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author) {
-        return ResponseEntity.ok(new ApiResponse<>(true, "Search complete", bookService.searchBooks(title, author)));
-    }
 
-    @PostMapping
+    @PostMapping(BOOK_PATH)
     public ResponseEntity<ApiResponse<BookDto>> addBook(@RequestBody BookDto dto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Book added", bookService.addBook(dto)));
     }
 
-    @PutMapping(BOOK_PATH_ID+"/available")
-    public ResponseEntity<ApiResponse<BookDto>> updateAvailability(
-            @PathVariable Long id,
-            @RequestParam boolean available) {
-        String message = available ? "Returned" : "Checked out";
-        return ResponseEntity.ok(new ApiResponse<>(true, message, bookService.updateAvailability(id, available)));
-    }
 }

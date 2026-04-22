@@ -11,16 +11,16 @@ This SPA follows the current backend handshake model:
 1. User clicks **Continue with SSO** in React.
 2. Browser is redirected to `auth-server` for login and consent.
 3. `auth-server` redirects back to `http://localhost:5173/auth/callback` with authorization code.
-4. SPA completes Authorization Code + PKCE and stores access token in `sessionStorage`.
+4. SPA completes Authorization Code + PKCE flow and stores access token in `sessionStorage`.
 5. React sends `Authorization: Bearer <token>` only to `library-service` endpoints.
 
 ## Required Backend Settings
 
 - `auth-server` must register client:
-  - `client_id=library-spa`
+  - `client_id=library-client`
   - public client (`ClientAuthenticationMethod.NONE`)
   - `AuthorizationGrantType.AUTHORIZATION_CODE`
-  - PKCE required
+  - PKCE required (`requireProofKey=true`)
   - redirect URI `http://localhost:5173/auth/callback`
 - `library-service` and `auth-server` should allow CORS from `http://localhost:5173`.
 

@@ -11,7 +11,7 @@ import java.util.List;
 public class BookServiceClient {
 
     private static final String BOOK_PATH = "/api/books";
-    private static final String BOOK_PATH_ID = "/api/books/{id}";
+    private static final String BOOK_PATH_ID = BOOK_PATH+"/{id}";
 
 
     private final RestClient restClient;
@@ -27,11 +27,6 @@ public class BookServiceClient {
                 });
     }
 
-    public ApiResponse<List<BookSummaryDto>> getAvailableBooks() {
-        return restClient.get().uri(BOOK_PATH+"/available").retrieve()
-                .body(new ParameterizedTypeReference<ApiResponse<List<BookSummaryDto>>>() {
-                });
-    }
 
     public ApiResponse<BookDto> getBookById(Long id) {
         return restClient.get().uri(BOOK_PATH_ID, id).retrieve()
@@ -39,17 +34,9 @@ public class BookServiceClient {
                 });
     }
 
-    public ApiResponse<List<BookSummaryDto>> searchBooks(String title, String author) {
-        String uri = BOOK_PATH+"/search" + (title != null ? "?title=" + title
-                : author != null ? "?author=" + author : "");
-        return restClient.get().uri(uri).retrieve()
-                .body(new ParameterizedTypeReference<ApiResponse<List<BookSummaryDto>>>() {
-                });
-    }
-
-    public ApiResponse<BookDto> updateAvailability(Long id, boolean available) {
-        return restClient.put().uri(BOOK_PATH+"/{id}/available" + "?available=" + available, id)
-                .retrieve().body(new ParameterizedTypeReference<ApiResponse<BookDto>>() {
+    public ApiResponse<BookDto> addBook(BookDto dto) {
+        return restClient.post().uri(BOOK_PATH).body(dto).retrieve()
+                .body(new ParameterizedTypeReference<ApiResponse<BookDto>>() {
                 });
     }
 }

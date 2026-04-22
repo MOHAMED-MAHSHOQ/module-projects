@@ -1,91 +1,76 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  checkoutBook,
-  getAllBooks,
-  getAvailableBooks,
-  returnBook,
-  searchBooks,
-} from "../api/books";
-import type { BookSummary } from "../types";
-
-type FilterMode = "all" | "available";
-
-function matchesQuery(book: BookSummary, query: string): boolean {
-  if (!query.trim()) return true;
-  const q = query.toLowerCase();
-  return (
-      book.title.toLowerCase().includes(q) ||
-      book.author.toLowerCase().includes(q)
-  );
-}
+import { addBook, getAllBooks, getBookById } from "../api/books";
+import type { Book } from "../types";
 
 export function DashboardPage(): JSX.Element {
   const queryClient = useQueryClient();
-  const [query, setQuery] = useState("");
-  const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [isbn, setIsbn] = useState("");
+  const [bookId, setBookId] = useState("");
 
   const booksQuery = useQuery({
-    queryKey: ["books", filterMode],
-    queryFn: () => (filterMode === "available" ? getAvailableBooks() : getAllBooks()),
+    queryKey: ["books"],
+    queryFn: getAllBooks,
   });
 
-  const checkoutMutation = useMutation({
-    mutationFn: (id: number) => checkoutBook(id),
+  const addBookMutation = useMutation({
+    mutationFn: addBook,
     onSuccess: () => {
-      toast.success("Book checked out successfully");
+      toast.success("Book added successfully");
+      setTitle("");
+      setAuthor("");
+      setIsbn("");
       void queryClient.invalidateQueries({ queryKey: ["books"] });
     },
     onError: (err: unknown) => {
       const msg =
-          err instanceof Error ? err.message : "Checkout failed. Please try again.";
+          err instanceof Error ? err.message : "Adding book failed. Please try again.";
       toast.error(msg);
     },
   });
 
-  const returnMutation = useMutation({
-    mutationFn: (id: number) => returnBook(id),
+  const findByIdMutation = useMutation({
+    mutationFn: (id: number) => getBookById(id),
     onSuccess: () => {
-      toast.success("Book returned successfully");
-      void queryClient.invalidateQueries({ queryKey: ["books"] });
+      toast.success("Book fetched");
     },
     onError: (err: unknown) => {
       const msg =
-          err instanceof Error ? err.message : "Return failed. Please try again.";
+          err instanceof Error ? err.message : "Could not fetch book by ID.";
       toast.error(msg);
     },
   });
-
-  const searchMutation = useMutation({
-    mutationFn: (text: string) => searchBooks(text),
-    onError: () => {
-      toast.error("Search request failed.");
-    },
-  });
-
-  // Derive visible books: prefer search results when available
-  const visibleBooks = useMemo<BookSummary[]>(() => {
-    const source: BookSummary[] = searchMutation.data ?? booksQuery.data ?? [];
-    return source.filter((book) => matchesQuery(book, query));
-  }, [booksQuery.data, query, searchMutation.data]);
 
   const allBooks = booksQuery.data ?? [];
   const totalBooks = allBooks.length;
   const availableCount = allBooks.filter((b) => b.available).length;
   const checkedOutCount = Math.max(totalBooks - availableCount, 0);
 
-  const triggerSearch = () => {
-    if (!query.trim()) {
-      searchMutation.reset();
+  const handleFindBook = () => {
+    const parsedId = Number(bookId);
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+      toast.error("Enter a valid numeric book ID.");
       return;
     }
-    searchMutation.mutate(query.trim());
+    findByIdMutation.mutate(parsedId);
   };
 
-  const handleReset = () => {
-    setQuery("");
-    searchMutation.reset();
+  const selectedBook: Book | null = findByIdMutation.data ?? null;
+
+  const handleAddBook = () => {
+    if (!title.trim() || !author.trim() || !isbn.trim()) {
+      toast.error("Title, author and ISBN are required.");
+      return;
+    }
+    addBookMutation.mutate({
+      title: title.trim(),
+      author: author.trim(),
+      isbn: isbn.trim(),
+      available: true,
+    });
   };
 
   return (
@@ -108,45 +93,52 @@ export function DashboardPage(): JSX.Element {
 
         {/* Toolbar */}
         <section className="toolbar-card">
+          <h3>Add Book</h3>
           <div className="search-row">
             <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by title or author"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") triggerSearch();
-                }}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
             />
-            <button type="button" onClick={triggerSearch}>
-              Search
-            </button>
-            <button type="button" className="button-secondary" onClick={handleReset}>
-              Reset
+            <input
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Author"
+            />
+            <input
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
+                placeholder="ISBN"
+            />
+            <button type="button" onClick={handleAddBook} disabled={addBookMutation.isPending}>
+              {addBookMutation.isPending ? "Saving..." : "Add"}
             </button>
           </div>
 
-          <div className="filter-row">
+          <h3 style={{ marginTop: "1rem" }}>Find by ID</h3>
+          <div className="search-row">
+            <input
+                value={bookId}
+                onChange={(e) => setBookId(e.target.value)}
+                placeholder="Book ID"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleFindBook();
+                }}
+            />
             <button
                 type="button"
-                className={filterMode === "all" ? "active" : "button-secondary"}
-                onClick={() => {
-                  setFilterMode("all");
-                  searchMutation.reset();
-                }}
+                onClick={handleFindBook}
+                disabled={findByIdMutation.isPending}
             >
-              All Books
-            </button>
-            <button
-                type="button"
-                className={filterMode === "available" ? "active" : "button-secondary"}
-                onClick={() => {
-                  setFilterMode("available");
-                  searchMutation.reset();
-                }}
-            >
-              Available Only
+              {findByIdMutation.isPending ? "Searching..." : "Get Book"}
             </button>
           </div>
+
+          {selectedBook && (
+              <p className="status-line">
+                Selected: {selectedBook.title} by {selectedBook.author} ({selectedBook.available ? "Available" : "Checked Out"})
+              </p>
+          )}
         </section>
 
         {/* Status */}
@@ -158,13 +150,9 @@ export function DashboardPage(): JSX.Element {
               Could not load catalog. Is the library service running?
             </p>
         )}
-        {searchMutation.isPending && (
-            <p className="status-line">Searching…</p>
-        )}
-
         {/* Book grid */}
         <section className="books-grid">
-          {visibleBooks.map((book) => (
+          {allBooks.map((book) => (
               <article key={book.id} className="book-card">
                 <header>
                   <h3>{book.title}</h3>
@@ -174,33 +162,14 @@ export function DashboardPage(): JSX.Element {
                 </header>
                 <p className="author">{book.author}</p>
                 <footer>
-                  {book.available ? (
-                      <button
-                          type="button"
-                          disabled={checkoutMutation.isPending}
-                          onClick={() => checkoutMutation.mutate(book.id)}
-                      >
-                        {checkoutMutation.isPending ? "Processing…" : "Checkout"}
-                      </button>
-                  ) : (
-                      <button
-                          type="button"
-                          className="button-secondary"
-                          disabled={returnMutation.isPending}
-                          onClick={() => returnMutation.mutate(book.id)}
-                      >
-                        {returnMutation.isPending ? "Processing…" : "Return"}
-                      </button>
-                  )}
+                  <small>ID: {book.id}</small>
                 </footer>
               </article>
           ))}
 
-          {!booksQuery.isLoading &&
-              !searchMutation.isPending &&
-              visibleBooks.length === 0 && (
-                  <p className="status-line">No books matched your filters.</p>
-              )}
+          {!booksQuery.isLoading && allBooks.length === 0 && (
+              <p className="status-line">No books found.</p>
+          )}
         </section>
       </div>
   );

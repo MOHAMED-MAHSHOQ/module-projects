@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.*;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.*;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
@@ -70,15 +71,16 @@ public class SecurityConfig {
     public RegisteredClientRepository registeredClientRepository() {
         var client = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("library-client")
-                .clientSecret("{noop}library-secret")
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://localhost:3000/callback")
+                .redirectUri("http://localhost:5173/auth/callback")
                 .postLogoutRedirectUri("http://localhost:5173")
                 .scope("library.read").scope("library.write")
                 .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(true).build())
+                        .requireAuthorizationConsent(true)
+                        .requireProofKey(true)
+                        .build())
                 .build();
         return new InMemoryRegisteredClientRepository(client);
     }
