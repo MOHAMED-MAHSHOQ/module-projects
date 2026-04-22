@@ -21,9 +21,7 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
     let mounted = true;
 
     userManager.getUser().then((storedUser) => {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       const activeUser = storedUser && !storedUser.expired ? storedUser : null;
       setUser(activeUser);
       attachAccessToken(activeUser?.access_token ?? null);
@@ -51,13 +49,29 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      isLoading,
-      login: async () => userManager.signinRedirect(),
-      logout: async () => userManager.signoutRedirect()
-    }),
-    [user, isLoading]
+      () => ({
+        user,
+        isLoading,
+        login: async () => {
+          await userManager.signinRedirect();
+        },
+        logout: async () => {
+          try {
+            // Clear local session immediately
+            await userManager.removeUser();
+            // Attempt OP logout — navigates away, so no need to setUser(null) after
+            await userManager.signoutRedirect();
+          } catch {
+            // If signoutRedirect fails (e.g. no end_session_endpoint),
+            // we already removed the user locally so the UI resets.
+            setUser(null);
+            attachAccessToken(null);
+            // Redirect to home manually
+            window.location.href = "/";
+          }
+        },
+      }),
+      [user, isLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -70,4 +84,3 @@ export function useAuth(): AuthContextValue {
   }
   return context;
 }
-
