@@ -1,4 +1,12 @@
 spring:
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 6f76ccc06be5f9
+    password: ce9e0527f873c4
+    properties:
+        mail.smtp.auth: true
+        mail.smtp.starttls.enable: true
   security:
     user:
       name: library-service-account
@@ -20,4 +28,6 @@ spring:
 server:
   port: 8082
 
-
+app:
+  notification:
+    super-admin-email: superadmin@gamil.com

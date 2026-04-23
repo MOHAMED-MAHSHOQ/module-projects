@@ -23,7 +23,11 @@ public class AppUser {
     @Column(nullable = false)
     private String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Column(unique = true,nullable = false)
+    private String email;
 }
 
 

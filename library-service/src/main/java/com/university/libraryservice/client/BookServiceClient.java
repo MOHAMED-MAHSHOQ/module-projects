@@ -11,7 +11,7 @@ import java.util.List;
 public class BookServiceClient {
 
     private static final String BOOK_PATH = "/api/books";
-    private static final String BOOK_PATH_ID = BOOK_PATH+"/{id}";
+    private static final String BOOK_PATH_ID = BOOK_PATH + "/{id}";
 
 
     private final RestClient restClient;
@@ -34,8 +34,10 @@ public class BookServiceClient {
                 });
     }
 
-    public ApiResponse<BookDto> addBook(BookDto dto) {
-        return restClient.post().uri(BOOK_PATH).body(dto).retrieve()
+    public ApiResponse<BookDto> addBook(BookDto dto, String currentUserName, String adminEmail) {
+        return restClient.post().uri(BOOK_PATH).header("Current-User-Name", currentUserName)
+                .header("Email",adminEmail)
+                .body(dto).retrieve()
                 .body(new ParameterizedTypeReference<ApiResponse<BookDto>>() {
                 });
     }
