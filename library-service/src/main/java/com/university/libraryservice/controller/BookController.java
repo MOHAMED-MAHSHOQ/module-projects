@@ -2,6 +2,7 @@ package com.university.libraryservice.controller;
 
 import com.university.libraryservice.client.BookServiceClient;
 import com.university.shared.dto.*;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class BookController {
 
   @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
   @GetMapping(BASE_PATH)
-  public ResponseEntity<ApiResponse<List<BookSummaryDto>>> getAllBooks() {
+  public ResponseEntity<ApiResponse<List<BookDto>>> getAllBooks() {
     return ResponseEntity.ok(bookServiceClient.getAllBooks());
   }
 
@@ -36,7 +37,7 @@ public class BookController {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping(BASE_PATH)
   public ResponseEntity<ApiResponse<BookDto>> addBook(
-      @RequestBody BookDto dto, @AuthenticationPrincipal Jwt jwt) {
+      @Valid @RequestBody BookCreateRequestDto dto, @AuthenticationPrincipal Jwt jwt) {
     String currentUserName = jwt.getClaimAsString("sub");
     String adminEmail = jwt.getClaimAsString("email");
 

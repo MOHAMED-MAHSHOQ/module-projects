@@ -24,15 +24,16 @@ public class Book {
   @Column(nullable = false)
   private String author;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String isbn;
 
   @Column(nullable = false)
-  private boolean available = true;
+  private boolean available;
 
   public Book(String title, String author, String isbn) {
     this.title = title;
     this.author = author;
     this.isbn = isbn;
+    this.available = true;
   }
 }

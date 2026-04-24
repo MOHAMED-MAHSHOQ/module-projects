@@ -18,12 +18,8 @@ public class BookServiceClient {
     this.restClient = restClient;
   }
 
-  public ApiResponse<List<BookSummaryDto>> getAllBooks() {
-    return restClient
-        .get()
-        .uri(BOOK_PATH)
-        .retrieve()
-        .body(new ParameterizedTypeReference<ApiResponse<List<BookSummaryDto>>>() {});
+  public ApiResponse<List<BookDto>> getAllBooks() {
+    return restClient.get().uri(BOOK_PATH).retrieve().body(new ParameterizedTypeReference<>() {});
   }
 
   public ApiResponse<BookDto> getBookById(Long id) {
@@ -31,10 +27,11 @@ public class BookServiceClient {
         .get()
         .uri(BOOK_PATH_ID, id)
         .retrieve()
-        .body(new ParameterizedTypeReference<ApiResponse<BookDto>>() {});
+        .body(new ParameterizedTypeReference<>() {});
   }
 
-  public ApiResponse<BookDto> addBook(BookDto dto, String currentUserName, String adminEmail) {
+  public ApiResponse<BookDto> addBook(
+      BookCreateRequestDto dto, String currentUserName, String adminEmail) {
     return restClient
         .post()
         .uri(BOOK_PATH)
@@ -42,6 +39,6 @@ public class BookServiceClient {
         .header("Email", adminEmail)
         .body(dto)
         .retrieve()
-        .body(new ParameterizedTypeReference<ApiResponse<BookDto>>() {});
+        .body(new ParameterizedTypeReference<>() {});
   }
 }

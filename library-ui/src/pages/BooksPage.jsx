@@ -36,8 +36,9 @@ export default function BooksPage() {
   const filtered = books.filter(b => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase()) ||
         b.author.toLowerCase().includes(search.toLowerCase())
+    const isAvailable = b.available !== false
     const matchFilter = filter === 'all' ? true :
-        filter === 'available' ? b.available : !b.available
+        filter === 'available' ? isAvailable : !isAvailable
     return matchSearch && matchFilter
   })
 
@@ -46,7 +47,7 @@ export default function BooksPage() {
     setShowAdd(false)
   }
 
-  const available = books.filter(b => b.available).length
+  const available = books.filter(b => b.available !== false).length
 
   return (
       <div className={styles.page}>

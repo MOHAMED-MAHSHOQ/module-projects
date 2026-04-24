@@ -23,6 +23,34 @@ export function useApi() {
     }
   }
 
+  const extractErrorMessage = (err, status) => {
+    if (!err) return `Request failed (${status})`
+    if (typeof err === 'string') return err
+    if (Array.isArray(err)) {
+      const first = err.find(Boolean)
+      return first ? String(first) : `Request failed (${status})`
+    }
+
+    if (typeof err.message === 'string' && err.message.trim()) return err.message
+    if (typeof err.error === 'string' && err.error.trim()) return err.error
+
+    if (Array.isArray(err.errors) && err.errors.length > 0) {
+      const first = err.errors.find(Boolean)
+      return first ? String(first) : `Request failed (${status})`
+    }
+
+    if (err.errors && typeof err.errors === 'object') {
+      const firstEntry = Object.entries(err.errors).find(([, v]) => Array.isArray(v) ? v.length > 0 : Boolean(v))
+      if (firstEntry) {
+        const [field, value] = firstEntry
+        const text = Array.isArray(value) ? value[0] : value
+        return `${field}: ${text}`
+      }
+    }
+
+    return `Request failed (${status})`
+  }
+
   const request = async (baseUrl, path, options = {}) => {
     const res = await fetch(`${baseUrl}${path}`, {
       ...options,
@@ -36,8 +64,8 @@ export function useApi() {
     if (res.status === 401) { logout(); return }
     if (res.status === 403) throw new Error('Access denied')
     if (!res.ok) {
-      const err = await parseResponseBody(res).catch(() => ({ message: 'Request failed' }))
-      throw new Error(err.message || 'Request failed')
+      const err = await parseResponseBody(res).catch(() => null)
+      throw new Error(extractErrorMessage(err, res.status))
     }
 
     return parseResponseBody(res)

@@ -5,6 +5,7 @@ const COLORS = ['#c9a96e', '#5c8be0', '#5cb87a', '#e0935c', '#9b5ce0']
 export default function BookCard({ book, index }) {
   const color = COLORS[index % COLORS.length]
   const initials = book.title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+  const isAvailable = book.available !== false
 
   return (
     <div className={styles.card} style={{ animationDelay: `${index * 0.04}s` }}>
@@ -14,8 +15,8 @@ export default function BookCard({ book, index }) {
       <div className={styles.body}>
         <div className={styles.top}>
           <h3 className={styles.title}>{book.title}</h3>
-          <span className={`badge ${book.available ? 'badge-available' : 'badge-unavailable'}`}>
-            {book.available ? 'Available' : 'Checked Out'}
+          <span className={`badge ${isAvailable ? 'badge-available' : 'badge-unavailable'}`}>
+            {isAvailable ? 'Available' : 'Checked Out'}
           </span>
         </div>
         <p className={styles.author}>{book.author}</p>

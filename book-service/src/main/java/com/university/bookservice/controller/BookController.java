@@ -2,6 +2,7 @@ package com.university.bookservice.controller;
 
 import com.university.bookservice.service.BookService;
 import com.university.shared.dto.*;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ public class BookController {
   private final BookService bookService;
 
   @GetMapping(BOOK_PATH)
-  public ResponseEntity<ApiResponse<List<BookSummaryDto>>> getAllBooks() {
+  public ResponseEntity<ApiResponse<List<BookDto>>> getAllBooks() {
     return ResponseEntity.ok(new ApiResponse<>(true, "Books fetched", bookService.getAllBooks()));
   }
 
@@ -30,7 +31,7 @@ public class BookController {
 
   @PostMapping(BOOK_PATH)
   public ResponseEntity<ApiResponse<BookDto>> addBook(
-      @RequestBody BookDto dto,
+      @Valid @RequestBody BookCreateRequestDto dto,
       @RequestHeader("Current-User-Name") String currentUserName,
       @RequestHeader("Email") String adminEmail) {
     log.info("The Current Username From Service A is : {}", currentUserName);

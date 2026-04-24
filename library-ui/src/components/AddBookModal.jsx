@@ -18,7 +18,7 @@ export default function AddBookModal({ onClose, onAdded }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await api.addBook({ ...form, available: true })
+      const res = await api.addBook(form)
       onAdded(res?.data)
     } catch (e) {
       setError(e.message)

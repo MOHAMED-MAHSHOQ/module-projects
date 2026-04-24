@@ -2,11 +2,12 @@ package com.university.bookservice.service;
 
 import com.university.bookservice.event.BookCreatedEvent;
 import com.university.bookservice.exceptions.BookNotFoundException;
+import com.university.bookservice.exceptions.DuplicateIsbnException;
 import com.university.bookservice.mapper.BookMapper;
 import com.university.bookservice.model.Book;
 import com.university.bookservice.repository.BookRepository;
+import com.university.shared.dto.BookCreateRequestDto;
 import com.university.shared.dto.BookDto;
-import com.university.shared.dto.BookSummaryDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ public class BookService {
   private final BookMapper bookMapper;
   private final ApplicationEventPublisher eventPublisher;
 
-  public List<BookSummaryDto> getAllBooks() {
-    return bookMapper.toSummaryDtoList(bookRepository.findAll());
+  public List<BookDto> getAllBooks() {
+    return bookMapper.toDtoList(bookRepository.findAll());
   }
 
   public BookDto getBookById(Long id) {
@@ -34,8 +35,15 @@ public class BookService {
   }
 
   @Transactional
-  public BookDto addBook(BookDto dto, String currentUserName, String adminEmail) {
-    Book saved = bookRepository.save(bookMapper.toEntity(dto));
+  public BookDto addBook(BookCreateRequestDto dto, String currentUserName, String adminEmail) {
+    if (bookRepository.existsByIsbn(dto.getIsbn())) {
+      throw new DuplicateIsbnException(dto.getIsbn());
+    }
+
+    Book book = bookMapper.toEntity(dto);
+    book.setAvailable(true);
+    Book saved = bookRepository.save(book);
+
     BookDto dto1 = bookMapper.toDto(saved);
     eventPublisher.publishEvent(
         new BookCreatedEvent(dto1.getTitle(), currentUserName, adminEmail, LocalDateTime.now()));
