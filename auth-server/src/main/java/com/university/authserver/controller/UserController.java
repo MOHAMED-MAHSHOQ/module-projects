@@ -4,6 +4,8 @@ import com.university.authserver.dto.UserDto;
 import com.university.authserver.dto.UserResponseDto;
 import com.university.authserver.service.UserService;
 import java.util.List;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +20,7 @@ public class UserController {
 
   @PreAuthorize("hasRole('SUPERADMIN')")
   @PostMapping
-  public ResponseEntity<String> createUser(@RequestBody UserDto request) {
+  public ResponseEntity<String> createUser(@Valid @RequestBody UserDto request) {
     userService.createUser(request);
     return ResponseEntity.ok("User created successfully");
   }
