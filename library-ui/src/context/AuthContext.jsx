@@ -1,29 +1,12 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 const AUTH_SERVER = 'http://localhost:8080'
 const CLIENT_ID = 'library-client'
+const CLIENT_SECRET = 'library-secret'
 const REDIRECT_URI = 'http://localhost:5173/callback'
 const SCOPES = 'library.read library.write openid'
 
 const AuthContext = createContext(null)
-
-function base64URLEncode(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-async function generateCodeVerifier() {
-  const array = new Uint8Array(32)
-  crypto.getRandomValues(array)
-  return base64URLEncode(array)
-}
-
-async function generateCodeChallenge(verifier) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(verifier)
-  const digest = await crypto.subtle.digest('SHA-256', data)
-  return base64URLEncode(digest)
-}
 
 function parseJwt(token) {
   try {
@@ -41,27 +24,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const login = useCallback(async () => {
-    const verifier = await generateCodeVerifier()
-    const challenge = await generateCodeChallenge(verifier)
-    sessionStorage.setItem('pkce_verifier', verifier)
+  const login = useCallback(() => {
+    // Generate a random state for CSRF protection
+    const state = Math.random().toString(36).substring(2)
+    sessionStorage.setItem('oauth_state', state)
 
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: CLIENT_ID,
       redirect_uri: REDIRECT_URI,
       scope: SCOPES,
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
+      state,
     })
 
     window.location.href = `${AUTH_SERVER}/oauth2/authorize?${params}`
   }, [])
 
-  const handleCallback = useCallback(async (code) => {
+  const handleCallback = useCallback(async (code, returnedState) => {
     setLoading(true)
     setError(null)
-    const verifier = sessionStorage.getItem('pkce_verifier')
+
+    // Validate state to prevent CSRF
+    const savedState = sessionStorage.getItem('oauth_state')
+    if (savedState && returnedState && savedState !== returnedState) {
+      setError('State mismatch — possible CSRF attack.')
+      setLoading(false)
+      return false
+    }
+    sessionStorage.removeItem('oauth_state')
 
     try {
       const body = new URLSearchParams({
@@ -69,17 +59,16 @@ export function AuthProvider({ children }) {
         code,
         redirect_uri: REDIRECT_URI,
         client_id: CLIENT_ID,
-        client_secret: 'library-secret', // needed because server registered with secret
       })
-      // Only add code_verifier if we have one (PKCE)
-      if (verifier) {
-        body.append('code_verifier', verifier)
-      }
+
+      // Use HTTP Basic Auth with client credentials (proper way for confidential clients)
+      const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)
 
       const res = await fetch(`${AUTH_SERVER}/oauth2/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${credentials}`,
         },
         body,
       })
@@ -93,12 +82,13 @@ export function AuthProvider({ children }) {
       const data = await res.json()
       sessionStorage.setItem('access_token', data.access_token)
       if (data.refresh_token) sessionStorage.setItem('refresh_token', data.refresh_token)
-      sessionStorage.removeItem('pkce_verifier')
       setAccessToken(data.access_token)
       setUser(parseJwt(data.access_token))
+      return true
     } catch (e) {
       console.error('Auth error:', e)
       setError(e.message)
+      return false
     } finally {
       setLoading(false)
     }

@@ -20,14 +20,4 @@ public class AuthGlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("status", "500");
-        errorResponse.put("error", "Internal Server Error");
-        errorResponse.put("message", "An unexpected error occurred in the Auth Server.");
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
 }

@@ -13,12 +13,18 @@
   justify-content: space-between;
   padding: 0 32px;
   height: 60px;
-  background: rgba(13,15,20,0.85);
+  background: rgba(13,15,20,0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
-.navLeft, .navRight {
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navRight {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -32,6 +38,39 @@
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.navLinkActive {
+  color: var(--text-primary) !important;
+  background: var(--bg-card) !important;
+  border-color: var(--border-active) !important;
 }
 
 .userInfo {
