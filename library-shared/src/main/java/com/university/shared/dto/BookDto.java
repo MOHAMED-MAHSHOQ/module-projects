@@ -10,9 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookDto {
-    private Long id;
-    private String title;
-    private String author;
-    private String isbn;
-    private boolean available;
+  private Long id;
+  private String title;
+  private String author;
+  private String isbn;
+  private boolean available;
 }

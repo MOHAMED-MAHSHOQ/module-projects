@@ -1,9 +1,9 @@
 spring:
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: 6f76ccc06be5f9
-    password: ce9e0527f873c4
+    host: smtp-relay.brevo.com
+    port: 587
+    username: a92285001@smtp-brevo.com
+    password: xsmtpsib-2e2f110ed0d459765864a299527b85877545b694587bb23b3e848c238940ca8f-MRkik0gRn0MiSte2
     properties:
         mail.smtp.auth: true
         mail.smtp.starttls.enable: true
@@ -30,4 +30,4 @@ server:
 
 app:
   notification:
-    super-admin-email: superadmin@gamil.com
+    super-admin-email: serverspring386@gmail.com
