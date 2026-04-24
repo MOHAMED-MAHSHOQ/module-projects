@@ -30,13 +30,17 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.security.*;
 import java.security.interfaces.*;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -46,17 +50,34 @@ public class SecurityConfig {
     private CustomUserDetailsService customUserDetailsService;
 
     @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+
+    @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
+
         http.exceptionHandling(e -> e
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
         );
+
         http.logout(logout -> logout
                 .logoutSuccessUrl("http://localhost:5173")
         );
+
         return http.build();
     }
 
@@ -72,6 +93,7 @@ public class SecurityConfig {
                 ));
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -91,9 +113,13 @@ public class SecurityConfig {
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://localhost:5173/callback")
                 .postLogoutRedirectUri("http://localhost:5173")
-                .scope("library.read").scope("library.write")
+                .scope("library.read")
+                .scope("library.write")
+                .scope("openid")
                 .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(true).build())
+                        .requireAuthorizationConsent(true)
+                        .requireProofKey(false)
+                        .build())
                 .build();
         return new InMemoryRegisteredClientRepository(client);
     }

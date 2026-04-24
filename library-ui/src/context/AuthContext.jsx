@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 
 const AUTH_SERVER = 'http://localhost:8080'
 const CLIENT_ID = 'library-client'
@@ -9,7 +9,7 @@ const AuthContext = createContext(null)
 
 function base64URLEncode(buffer) {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
 async function generateCodeVerifier() {
@@ -62,22 +62,34 @@ export function AuthProvider({ children }) {
     setLoading(true)
     setError(null)
     const verifier = sessionStorage.getItem('pkce_verifier')
-    if (!verifier) { setError('Missing PKCE verifier'); setLoading(false); return }
 
     try {
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: REDIRECT_URI,
+        client_id: CLIENT_ID,
+        client_secret: 'library-secret', // needed because server registered with secret
+      })
+      // Only add code_verifier if we have one (PKCE)
+      if (verifier) {
+        body.append('code_verifier', verifier)
+      }
+
       const res = await fetch(`${AUTH_SERVER}/oauth2/token`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: REDIRECT_URI,
-          client_id: CLIENT_ID,
-          client_secret: 'library-secret',
-          code_verifier: verifier,
-        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body,
       })
-      if (!res.ok) throw new Error('Token exchange failed')
+
+      if (!res.ok) {
+        const errText = await res.text()
+        console.error('Token exchange failed:', errText)
+        throw new Error('Token exchange failed: ' + errText)
+      }
+
       const data = await res.json()
       sessionStorage.setItem('access_token', data.access_token)
       if (data.refresh_token) sessionStorage.setItem('refresh_token', data.refresh_token)
@@ -85,6 +97,7 @@ export function AuthProvider({ children }) {
       setAccessToken(data.access_token)
       setUser(parseJwt(data.access_token))
     } catch (e) {
+      console.error('Auth error:', e)
       setError(e.message)
     } finally {
       setLoading(false)
@@ -100,7 +113,7 @@ export function AuthProvider({ children }) {
 
   const getRoles = useCallback(() => {
     if (!user) return []
-    return user.roles || []
+    return Array.isArray(user.roles) ? user.roles : []
   }, [user])
 
   const hasRole = useCallback((role) => {
@@ -108,9 +121,9 @@ export function AuthProvider({ children }) {
   }, [getRoles])
 
   return (
-    <AuthContext.Provider value={{ accessToken, user, loading, error, login, handleCallback, logout, getRoles, hasRole }}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{ accessToken, user, loading, error, login, handleCallback, logout, getRoles, hasRole }}>
+        {children}
+      </AuthContext.Provider>
   )
 }
 
