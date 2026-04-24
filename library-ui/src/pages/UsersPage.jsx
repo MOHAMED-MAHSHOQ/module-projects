@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApi } from '../hooks/useApi'
 import styles from './UsersPage.module.css'
 
@@ -18,12 +18,49 @@ export default function UsersPage() {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [updateError, setUpdateError] = useState(null)
     const [updateSuccess, setUpdateSuccess] = useState(null)
+    const [users, setUsers] = useState([])
+    const [usersLoading, setUsersLoading] = useState(true)
+    const [usersError, setUsersError] = useState(null)
 
     const setCreate = (field) => (e) =>
         setCreateForm(prev => ({ ...prev, [field]: e.target.value }))
 
     const setUpdate = (field) => (e) =>
         setUpdateForm(prev => ({ ...prev, [field]: e.target.value }))
+
+    const loadUsers = async () => {
+        setUsersLoading(true)
+        setUsersError(null)
+        try {
+            const result = await api.getUsers()
+            const rawUsers = Array.isArray(result)
+                ? result
+                : (Array.isArray(result?.data) ? result.data : [])
+
+            const normalizedUsers = rawUsers
+                .map((u) => {
+                    const idValue = Number(u?.id ?? u?.userId)
+                    return {
+                        ...u,
+                        id: Number.isInteger(idValue) && idValue > 0 ? idValue : null,
+                    }
+                })
+                .filter((u) => u.id !== null)
+
+            setUsers(normalizedUsers)
+            if (rawUsers.length > 0 && normalizedUsers.length === 0) {
+                setUsersError('Users loaded, but IDs are missing from API response. Please restart auth-server with latest changes.')
+            }
+        } catch (e) {
+            setUsersError(e.message || 'Failed to load users.')
+        } finally {
+            setUsersLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        loadUsers()
+    }, [])
 
     const handleCreateUser = async () => {
         const { username, password, email, role } = createForm
@@ -38,6 +75,7 @@ export default function UsersPage() {
             await api.createUser({ username, password, email, role })
             setCreateSuccess(`User "${username}" created successfully with role ${role}.`)
             setCreateForm({ username: '', password: '', email: '', role: 'USER' })
+            await loadUsers()
         } catch (e) {
             setCreateError(e.message)
         } finally {
@@ -48,12 +86,17 @@ export default function UsersPage() {
     const handleUpdateRole = async () => {
         const { userId, newRole } = updateForm
         if (!userId) {
-            setUpdateError('User ID is required.')
+            setUpdateError('Please select a user first.')
             return
         }
-        const id = Number(userId)
-        if (isNaN(id) || id <= 0) {
-            setUpdateError('User ID must be a positive number.')
+        const selectedUser = users.find(u => String(u.id) === String(userId))
+        if (!selectedUser) {
+            setUpdateError('Selected user is invalid. Please reselect a user from the list.')
+            return
+        }
+        const id = Number(selectedUser.id)
+        if (!Number.isInteger(id) || id <= 0) {
+            setUpdateError('Selected user has an invalid ID. Refresh users and try again.')
             return
         }
         setUpdateLoading(true)
@@ -61,14 +104,19 @@ export default function UsersPage() {
         setUpdateSuccess(null)
         try {
             await api.updateUserRole(id, newRole)
-            setUpdateSuccess(`User #${userId} role updated to ${newRole} successfully.`)
+            const selectedLabel = selectedUser.username ? `${selectedUser.username} (#${id})` : `#${id}`
+            setUpdateSuccess(`User ${selectedLabel} role updated to ${newRole} successfully.`)
             setUpdateForm({ userId: '', newRole: 'USER' })
+            await loadUsers()
         } catch (e) {
-            setUpdateError(e.message)
+            const msg = e?.message || 'Failed to update role.'
+            setUpdateError(msg.includes('positive number') ? 'Selected user ID is invalid in backend response. Please refresh users and retry.' : msg)
         } finally {
             setUpdateLoading(false)
         }
     }
+
+    const selectedUser = users.find(u => String(u.id) === String(updateForm.userId))
 
     return (
         <div className={styles.page}>
@@ -85,7 +133,7 @@ export default function UsersPage() {
 
             <div className={styles.info}>
                 <InfoIcon />
-                <p>Manage system users and their roles. The SUPERADMIN role can only be assigned to one user at a time. Use User ID (numeric) from the database to update roles.</p>
+                <p>Manage system users and their roles. The SUPERADMIN role can only be assigned to one user at a time. Select a user from the list to update roles.</p>
             </div>
 
             <div className={styles.grid}>
@@ -179,16 +227,26 @@ export default function UsersPage() {
 
                     <div className={styles.fields}>
                         <div className={styles.field}>
-                            <label className={styles.label}>User ID</label>
-                            <input
+                            <label className={styles.label}>User</label>
+                            <select
                                 className="input-field"
-                                type="number"
-                                placeholder="e.g. 3"
                                 value={updateForm.userId}
                                 onChange={setUpdate('userId')}
-                                min="1"
-                            />
-                            <p className={styles.hint}>Find the numeric user ID in your database (auto-incremented).</p>
+                                disabled={usersLoading}
+                            >
+                                <option value="">{usersLoading ? 'Loading users...' : 'Select user to update'}</option>
+                                {users.map(u => (
+                                    <option key={u.id} value={u.id}>{u.username} ({u.email}) - {u.role}</option>
+                                ))}
+                            </select>
+                            <p className={styles.hint}>Pick a user from the list. No need to remember database IDs.</p>
+                            {usersError && <StatusMessage type="error" message={usersError} />}
+                            {!usersLoading && users.length === 0 && <StatusMessage type="error" message="No users found." />}
+                            {selectedUser && (
+                                <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 14px', background: 'var(--bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                                    Selected: <strong style={{ color: 'var(--text-primary)' }}>{selectedUser.username}</strong> ({selectedUser.email}) - current role <strong style={{ color: 'var(--text-primary)' }}>{selectedUser.role}</strong>
+                                </div>
+                            )}
                         </div>
                         <div className={styles.field}>
                             <label className={styles.label}>New Role</label>
@@ -219,7 +277,7 @@ export default function UsersPage() {
                         <button
                             className="btn"
                             onClick={handleUpdateRole}
-                            disabled={updateLoading}
+                            disabled={updateLoading || usersLoading || users.length === 0}
                             style={{
                                 width: '100%',
                                 justifyContent: 'center',

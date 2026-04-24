@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import styles from './LoginPage.module.css'
 
 export default function LoginPage() {
-  const { login, accessToken } = useAuth()
+  const { login, accessToken, getHomeRoute } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (accessToken) navigate('/books')
-  }, [accessToken, navigate])
+    if (accessToken) navigate(getHomeRoute())
+  }, [accessToken, getHomeRoute, navigate])
 
   return (
     <div className={styles.wrapper}>

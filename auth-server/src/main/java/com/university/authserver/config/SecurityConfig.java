@@ -76,7 +76,7 @@ public class SecurityConfig {
         );
 
         http.logout(logout -> logout
-                .logoutSuccessUrl("http://localhost:5173")
+                .logoutSuccessUrl("http://localhost:5173/")
         );
 
         return http.build();
@@ -89,6 +89,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(a -> a.anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
+                .logout(logout -> logout.logoutSuccessUrl("http://localhost:5173/"))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
                 ));
@@ -115,7 +116,7 @@ public class SecurityConfig {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://localhost:5173/callback")
-                .postLogoutRedirectUri("http://localhost:5173")
+                .postLogoutRedirectUri("http://localhost:5173/")
                 .scope("library.read")
                 .scope("library.write")
                 .scope("openid")

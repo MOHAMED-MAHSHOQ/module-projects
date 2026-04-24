@@ -110,8 +110,13 @@ export function AuthProvider({ children }) {
     return getRoles().includes(role)
   }, [getRoles])
 
+  const getHomeRoute = useCallback(() => {
+    const roles = getRoles()
+    return roles.includes('SUPERADMIN') ? '/users' : '/books'
+  }, [getRoles])
+
   return (
-      <AuthContext.Provider value={{ accessToken, user, loading, error, login, handleCallback, logout, getRoles, hasRole }}>
+      <AuthContext.Provider value={{ accessToken, user, loading, error, login, handleCallback, logout, getRoles, hasRole, getHomeRoute }}>
         {children}
       </AuthContext.Provider>
   )

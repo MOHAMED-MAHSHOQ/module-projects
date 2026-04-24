@@ -20,13 +20,15 @@ export default function Layout({ children }) {
                         <span>Library</span>
                     </div>
                     <div className={styles.navLinks}>
-                        <NavLink
-                            to="/books"
-                            className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
-                        >
-                            <BookOpenIcon />
-                            Catalogue
-                        </NavLink>
+                        {!isSuperAdmin && (
+                            <NavLink
+                                to="/books"
+                                className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
+                            >
+                                <BookOpenIcon />
+                                Catalogue
+                            </NavLink>
+                        )}
                         {isSuperAdmin && (
                             <NavLink
                                 to="/users"

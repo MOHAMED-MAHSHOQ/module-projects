@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function CallbackPage() {
-  const { handleCallback, error } = useAuth()
+  const { handleCallback, error, getHomeRoute } = useAuth()
   const navigate = useNavigate()
   const done = useRef(false)
 
@@ -24,7 +24,7 @@ export default function CallbackPage() {
 
     handleCallback(code, state).then((success) => {
       if (success) {
-        navigate('/books', { replace: true })
+        navigate(getHomeRoute(), { replace: true })
       } else {
         navigate('/', { replace: true })
       }

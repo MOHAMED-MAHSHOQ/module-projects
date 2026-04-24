@@ -7,12 +7,12 @@ import UsersPage from './pages/UsersPage'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children, requiredRoles }) {
-    const { accessToken, getRoles } = useAuth()
+    const { accessToken, getRoles, getHomeRoute } = useAuth()
     if (!accessToken) return <Navigate to="/" replace />
     if (requiredRoles) {
         const roles = getRoles()
         const hasAccess = requiredRoles.some(r => roles.includes(r))
-        if (!hasAccess) return <Navigate to="/books" replace />
+        if (!hasAccess) return <Navigate to={getHomeRoute()} replace />
     }
     return children
 }
@@ -23,7 +23,7 @@ function AppRoutes() {
             <Route path="/" element={<LoginPage />} />
             <Route path="/callback" element={<CallbackPage />} />
             <Route path="/books" element={
-                <ProtectedRoute requiredRoles={['USER', 'ADMIN', 'SUPERADMIN']}>
+                <ProtectedRoute requiredRoles={['USER', 'ADMIN']}>
                     <Layout>
                         <BooksPage />
                     </Layout>

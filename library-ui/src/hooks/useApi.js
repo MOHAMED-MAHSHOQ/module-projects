@@ -6,6 +6,23 @@ const AUTH_API = 'http://localhost:8080'
 export function useApi() {
   const { accessToken, logout } = useAuth()
 
+  const parseResponseBody = async (res) => {
+    const contentType = res.headers.get('content-type') || ''
+
+    if (contentType.includes('application/json')) {
+      return res.json()
+    }
+
+    const text = await res.text()
+    if (!text) return null
+
+    try {
+      return JSON.parse(text)
+    } catch {
+      return { message: text }
+    }
+  }
+
   const request = async (baseUrl, path, options = {}) => {
     const res = await fetch(`${baseUrl}${path}`, {
       ...options,
@@ -19,10 +36,11 @@ export function useApi() {
     if (res.status === 401) { logout(); return }
     if (res.status === 403) throw new Error('Access denied')
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Request failed' }))
+      const err = await parseResponseBody(res).catch(() => ({ message: 'Request failed' }))
       throw new Error(err.message || 'Request failed')
     }
-    return res.json()
+
+    return parseResponseBody(res)
   }
 
   const libraryReq = (path, options) => request(LIBRARY_API, path, options)
@@ -37,5 +55,6 @@ export function useApi() {
     // Users (via auth-server on 8080)
     createUser: (userData) => authReq('/api/users', { method: 'POST', body: JSON.stringify(userData) }),
     updateUserRole: (id, newRole) => authReq(`/api/users/${id}/role?newRole=${newRole}`, { method: 'PUT' }),
+    getUsers: () => authReq('/api/users'),
   }
 }

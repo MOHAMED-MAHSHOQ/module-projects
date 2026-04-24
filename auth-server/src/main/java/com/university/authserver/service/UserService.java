@@ -1,6 +1,7 @@
 package com.university.authserver.service;
 
 import com.university.authserver.dto.UserDto;
+import com.university.authserver.dto.UserResponseDto;
 import com.university.authserver.entity.AppUser;
 import com.university.authserver.entity.Role;
 import com.university.authserver.repository.UserRepository;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,5 +59,16 @@ public class UserService {
         }
         user.setRole(requestedRole);
         userRepository.save(user);
+    }
+
+    public List<UserResponseDto> getAllUsers() {
+            return userRepository.findAll().stream().map(appUser -> {
+            UserResponseDto dto = new UserResponseDto();
+            dto.setId(appUser.getId());
+            dto.setUsername(appUser.getUsername());
+            dto.setEmail(appUser.getEmail());
+            dto.setRole(appUser.getRole().name());
+            return dto;
+        }).toList();
     }
 }
