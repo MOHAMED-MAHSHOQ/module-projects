@@ -4,6 +4,9 @@ import styles from './UsersPage.module.css'
 
 const ROLES = ['USER', 'ADMIN', 'SUPERADMIN']
 
+const normalizeSpaces = (value) => value.replace(/\s+/g, ' ').trim()
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
 export default function UsersPage() {
     const api = useApi()
 
@@ -63,16 +66,39 @@ export default function UsersPage() {
     }, [])
 
     const handleCreateUser = async () => {
-        const { username, password, email, role } = createForm
-        if (!username || !password || !email) {
+        const username = normalizeSpaces(createForm.username)
+        const email = createForm.email.trim()
+        const password = createForm.password.trim()
+        const role = createForm.role
+
+        if (!username || !password || !email || !role) {
             setCreateError('All fields are required.')
             return
         }
+        if (username.length < 3 || username.length > 20) {
+            setCreateError('Username must be between 3 and 20 characters.')
+            return
+        }
+        if (!isValidEmail(email)) {
+            setCreateError('Please provide a valid email address.')
+            return
+        }
+        if (password.length < 8) {
+            setCreateError('Password must be at least 8 characters long.')
+            return
+        }
+        if (!ROLES.includes(role)) {
+            setCreateError('Please select a valid role.')
+            return
+        }
+
+        const payload = { username, password, email, role }
+
         setCreateLoading(true)
         setCreateError(null)
         setCreateSuccess(null)
         try {
-            await api.createUser({ username, password, email, role })
+            await api.createUser(payload)
             setCreateSuccess(`User "${username}" created successfully with role ${role}.`)
             setCreateForm({ username: '', password: '', email: '', role: 'USER' })
             await loadUsers()
@@ -97,6 +123,14 @@ export default function UsersPage() {
         const id = Number(selectedUser.id)
         if (!Number.isInteger(id) || id <= 0) {
             setUpdateError('Selected user has an invalid ID. Refresh users and try again.')
+            return
+        }
+        if (!ROLES.includes(newRole)) {
+            setUpdateError('Please select a valid role.')
+            return
+        }
+        if (selectedUser.role === newRole) {
+            setUpdateError(`User already has the role: ${newRole}`)
             return
         }
         setUpdateLoading(true)
@@ -174,7 +208,7 @@ export default function UsersPage() {
                             <input
                                 className="input-field"
                                 type="password"
-                                placeholder="Minimum 6 characters"
+                                placeholder="Minimum 8 characters"
                                 value={createForm.password}
                                 onChange={setCreate('password')}
                             />

@@ -1,6 +1,7 @@
 package com.university.bookservice.listener;
 
 import com.university.bookservice.event.BookCreatedEvent;
+import com.university.bookservice.event.BookUpdateEvent;
 import com.university.bookservice.service.EmailService;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,17 @@ public class NotificationListener {
         event.adminUsername(),
         event.adminEmail(),
         formattedTime);
+  }
+
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onBookUpdated(BookUpdateEvent event) {
+    log.info("Background Event caught! Triggering email service for book update: {}", event.id());
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    String formattedTime = event.timestamp().format(formatter);
+
+    emailService.sendBookUpdateAlert(superadminEmail, event.id(), event.bookTitle(), event.updates(), event.adminUsername(), event.adminEmail(), formattedTime);
+
   }
 }

@@ -48,6 +48,16 @@ export function useApi() {
       }
     }
 
+    if (typeof err === 'object') {
+      const reservedKeys = new Set(['timestamp', 'status', 'error', 'message', 'path'])
+      const firstEntry = Object.entries(err).find(([k, v]) => !reservedKeys.has(k) && (Array.isArray(v) ? v.length > 0 : Boolean(v)))
+      if (firstEntry) {
+        const [field, value] = firstEntry
+        const text = Array.isArray(value) ? value[0] : value
+        return `${field}: ${text}`
+      }
+    }
+
     return `Request failed (${status})`
   }
 
@@ -82,7 +92,7 @@ export function useApi() {
 
     // Users (via auth-server on 8080)
     createUser: (userData) => authReq('/api/users', { method: 'POST', body: JSON.stringify(userData) }),
-    updateUserRole: (id, newRole) => authReq(`/api/users/${id}/role?newRole=${newRole}`, { method: 'PUT' }),
+    updateUserRole: (id, newRole) => authReq(`/api/users/${id}/role?newRole=${encodeURIComponent(newRole)}`, { method: 'PUT' }),
     getUsers: () => authReq('/api/users'),
   }
 }

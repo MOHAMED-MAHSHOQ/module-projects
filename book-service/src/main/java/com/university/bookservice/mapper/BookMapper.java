@@ -4,8 +4,11 @@ import com.university.bookservice.model.Book;
 import com.university.shared.dto.BookCreateRequestDto;
 import com.university.shared.dto.BookDto;
 import java.util.List;
+
+import com.university.shared.dto.BookUpdateRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface BookMapper {
@@ -16,4 +19,6 @@ public interface BookMapper {
   Book toEntity(BookCreateRequestDto dto);
 
   List<BookDto> toDtoList(List<Book> books);
+
+  void updateEntityFromDto(BookUpdateRequestDto dto, @MappingTarget Book entity);
 }

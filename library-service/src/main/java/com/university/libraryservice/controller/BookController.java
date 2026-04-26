@@ -43,4 +43,13 @@ public class BookController {
 
     return ResponseEntity.ok(bookServiceClient.addBook(dto, currentUserName, adminEmail));
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PutMapping(BASE_PATH_ID)
+  public ResponseEntity<ApiResponse<BookDto>> updateBook(
+      @PathVariable Long id, @Valid @RequestBody BookUpdateRequestDto updateDto, @AuthenticationPrincipal Jwt jwt) {
+    String currentUserName = jwt.getClaimAsString("sub");
+    String adminEmail = jwt.getClaimAsString("email");
+    return ResponseEntity.ok(bookServiceClient.updateBook(id, updateDto,currentUserName,adminEmail));
+  }
 }
