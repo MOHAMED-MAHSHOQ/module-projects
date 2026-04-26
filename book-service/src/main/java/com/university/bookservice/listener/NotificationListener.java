@@ -1,12 +1,15 @@
 package com.university.bookservice.listener;
 
 import com.university.bookservice.event.BookCreatedEvent;
+import com.university.bookservice.event.BookDeletedEvent;
+import com.university.bookservice.event.BookPatchedEvent;
 import com.university.bookservice.event.BookUpdateEvent;
 import com.university.bookservice.service.EmailService;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -47,5 +50,35 @@ public class NotificationListener {
 
     emailService.sendBookUpdateAlert(superadminEmail, event.id(), event.bookTitle(), event.updates(), event.adminUsername(), event.adminEmail(), formattedTime);
 
+  }
+
+  @Async
+  @EventListener
+  public void handleBookUpdated(BookPatchedEvent event) {
+    log.info("Audit log: Book ID {} updated by {}", event.bookId(), event.adminUsername());
+
+    emailService.sendBookPatchedAlert(
+            superadminEmail,
+            event.bookId(),
+            event.originalTitle(),
+            event.updates(),
+            event.adminUsername(),
+            event.adminEmail(),
+            event.timestamp().toString()
+    );
+  }
+  @Async
+  @EventListener
+  public void handleBookDeleted(BookDeletedEvent event) {
+    log.warn("Audit log: Book '{}' (ID: {}) was DELETED by {}", event.deletedTitle(), event.bookId(), event.adminUsername());
+
+    emailService.sendBookDeletionAlert(
+            superadminEmail,
+            event.bookId(),
+            event.deletedTitle(),
+            event.adminUsername(),
+            event.adminEmail(),
+            event.timestamp().toString()
+    );
   }
 }

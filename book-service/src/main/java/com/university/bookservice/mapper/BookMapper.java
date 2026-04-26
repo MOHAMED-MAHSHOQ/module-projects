@@ -5,10 +5,9 @@ import com.university.shared.dto.BookCreateRequestDto;
 import com.university.shared.dto.BookDto;
 import java.util.List;
 
+import com.university.shared.dto.BookPatchRequestDto;
 import com.university.shared.dto.BookUpdateRequestDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface BookMapper {
@@ -21,4 +20,7 @@ public interface BookMapper {
   List<BookDto> toDtoList(List<Book> books);
 
   void updateEntityFromDto(BookUpdateRequestDto dto, @MappingTarget Book entity);
+
+  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+  void patchEntityFromDto(BookPatchRequestDto dto, @MappingTarget Book entity);
 }

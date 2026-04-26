@@ -58,4 +58,28 @@ public class BookServiceClient {
                 .body(new ParameterizedTypeReference<>() {
                 });
     }
+
+    public ApiResponse<BookDto> patchBook(Long id, BookPatchRequestDto patchDto, String currentUserName, String adminEmail) {
+        return restClient
+                .patch()
+                .uri(BOOK_PATH_ID, id)
+                .header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail)
+                .body(patchDto)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public ApiResponse<Void> deleteBook(Long id, String currentUserName, String adminEmail) {
+        return restClient
+                .delete()
+                .uri(BOOK_PATH_ID, id)
+                .header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+    }
 }
+

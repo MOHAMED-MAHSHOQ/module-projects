@@ -52,4 +52,23 @@ public class BookController {
     String adminEmail = jwt.getClaimAsString("email");
     return ResponseEntity.ok(bookServiceClient.updateBook(id, updateDto,currentUserName,adminEmail));
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PatchMapping(BASE_PATH_ID)
+  public ResponseEntity<ApiResponse<BookDto>> patchBook(
+      @PathVariable Long id, @Valid @RequestBody BookPatchRequestDto patchDto, @AuthenticationPrincipal Jwt jwt) {
+    String currentUserName = jwt.getClaimAsString("sub");
+    String adminEmail = jwt.getClaimAsString("email");
+    return ResponseEntity.ok(bookServiceClient.patchBook(id, patchDto,currentUserName,adminEmail));
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping(BASE_PATH_ID)
+  public ResponseEntity<ApiResponse<Void>> deleteBook(
+      @PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+    String currentUserName = jwt.getClaimAsString("sub");
+    String adminEmail = jwt.getClaimAsString("email");
+    bookServiceClient.deleteBook(id, currentUserName, adminEmail);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Book deleted", null));
+  }
 }
