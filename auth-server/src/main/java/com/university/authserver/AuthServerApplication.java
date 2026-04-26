@@ -25,7 +25,7 @@ public class AuthServerApplication {
       if (userRepository.findByUsername("user1").isEmpty()) {
         AppUser user = new AppUser();
         user.setUsername("user1");
-        user.setPassword(passwordEncoder.encode("pass123"));
+        user.setPassword(passwordEncoder.encode("pass1234"));
         user.setRole(Role.USER);
         user.setEmail("user@gmail.com");
         userRepository.save(user);
@@ -35,7 +35,7 @@ public class AuthServerApplication {
       if (userRepository.findByUsername("admin1").isEmpty()) {
         AppUser admin = new AppUser();
         admin.setUsername("admin1");
-        admin.setPassword(passwordEncoder.encode("pass123"));
+        admin.setPassword(passwordEncoder.encode("pass1234"));
         admin.setRole(Role.ADMIN);
         admin.setEmail("admin@gmail.com");
         userRepository.save(admin);
@@ -45,7 +45,7 @@ public class AuthServerApplication {
       if (userRepository.findByUsername("super1").isEmpty()) {
         AppUser superadmin = new AppUser();
         superadmin.setUsername("super1");
-        superadmin.setPassword(passwordEncoder.encode("pass123"));
+        superadmin.setPassword(passwordEncoder.encode("pass1234"));
         superadmin.setRole(Role.SUPERADMIN);
         superadmin.setEmail("superadmin@gmail.com");
         userRepository.save(superadmin);

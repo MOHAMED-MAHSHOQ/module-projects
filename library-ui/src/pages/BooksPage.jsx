@@ -13,7 +13,9 @@ export default function BooksPage() {
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
+  const [editingBook, setEditingBook] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [actionLoading, setActionLoading] = useState(false)
 
   // Only ADMIN can add books; SUPERADMIN manages users not books
   const isAdmin = hasRole('ADMIN')
@@ -42,9 +44,68 @@ export default function BooksPage() {
     return matchSearch && matchFilter
   })
 
-  const handleBookAdded = (newBook) => {
-    setBooks(prev => [...prev, newBook])
+  const handleBookSaved = (book) => {
+    if (editingBook) {
+      setBooks(prev => prev.map((b) => (String(b.id) === String(book?.id) ? book : b)))
+    } else {
+      setBooks(prev => [...prev, book])
+    }
+    setEditingBook(null)
     setShowAdd(false)
+  }
+
+  const handleEditBook = (book) => {
+    setError(null)
+    setEditingBook(book)
+  }
+
+  const handleDeleteBook = async (book) => {
+    const id = Number(book?.id)
+    if (!Number.isInteger(id) || id <= 0) {
+      setError('Cannot delete this book because it has an invalid ID.')
+      return
+    }
+    if (!window.confirm(`Delete "${book.title}"? This action cannot be undone.`)) {
+      return
+    }
+
+    setActionLoading(true)
+    setError(null)
+    try {
+      await api.deleteBook(id)
+      setBooks((prev) => prev.filter((b) => String(b.id) !== String(id)))
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleToggleAvailability = async (book) => {
+    const id = Number(book?.id)
+    if (!Number.isInteger(id) || id <= 0) {
+      setError('Cannot update availability because this book has an invalid ID.')
+      return
+    }
+
+    const nextAvailable = !(book?.available !== false)
+
+    setActionLoading(true)
+    setError(null)
+    try {
+      const res = await api.patchBook(id, { available: nextAvailable })
+      const updatedBook = res?.data
+
+      if (updatedBook) {
+        setBooks((prev) => prev.map((b) => (String(b.id) === String(id) ? updatedBook : b)))
+      } else {
+        setBooks((prev) => prev.map((b) => (String(b.id) === String(id) ? { ...b, available: nextAvailable } : b)))
+      }
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   const available = books.filter(b => b.available !== false).length
@@ -76,7 +137,7 @@ export default function BooksPage() {
           <div className={styles.statDivider} />
           <div className={styles.stat}>
             <span className={styles.statNum} style={{ color: 'var(--text-muted)' }}>{books.length - available}</span>
-            <span className={styles.statLabel}>Checked Out</span>
+            <span className={styles.statLabel}>Unavailable</span>
           </div>
         </div>
 
@@ -119,13 +180,29 @@ export default function BooksPage() {
         ) : (
             <div className={styles.grid}>
               {filtered.map((book, i) => (
-                  <BookCard key={book.id} book={book} index={i} />
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    index={i}
+                    canManage={isAdmin}
+                    disabled={actionLoading}
+                    onEdit={handleEditBook}
+                    onToggleAvailability={handleToggleAvailability}
+                    onDelete={handleDeleteBook}
+                  />
               ))}
             </div>
         )}
 
-        {showAdd && (
-            <AddBookModal onClose={() => setShowAdd(false)} onAdded={handleBookAdded} />
+        {(showAdd || editingBook) && (
+            <AddBookModal
+              initialBook={editingBook}
+              onClose={() => {
+                setShowAdd(false)
+                setEditingBook(null)
+              }}
+              onAdded={handleBookSaved}
+            />
         )}
       </div>
   )

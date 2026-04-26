@@ -89,6 +89,9 @@ export function useApi() {
     getBooks: () => libraryReq('/api/books'),
     getBook: (id) => libraryReq(`/api/books/${id}`),
     addBook: (book) => libraryReq('/api/books', { method: 'POST', body: JSON.stringify(book) }),
+    updateBook: (id, book) => libraryReq(`/api/books/${id}`, { method: 'PUT', body: JSON.stringify(book) }),
+    patchBook: (id, patch) => libraryReq(`/api/books/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+    deleteBook: (id) => libraryReq(`/api/books/${id}`, { method: 'DELETE' }),
 
     // Users (via auth-server on 8080)
     createUser: (userData) => authReq('/api/users', { method: 'POST', body: JSON.stringify(userData) }),

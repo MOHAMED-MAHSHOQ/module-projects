@@ -4,11 +4,16 @@ import styles from './AddBookModal.module.css'
 
 const normalizeSpaces = (value) => value.replace(/\s+/g, ' ').trim()
 
-export default function AddBookModal({ onClose, onAdded }) {
+export default function AddBookModal({ onClose, onAdded, initialBook = null }) {
   const api = useApi()
-  const [form, setForm] = useState({ title: '', author: '', isbn: '' })
+  const [form, setForm] = useState({
+    title: initialBook?.title || '',
+    author: initialBook?.author || '',
+    isbn: initialBook?.isbn || '',
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const isEditMode = Boolean(initialBook)
 
   const set = (field) => (e) => {
     const rawValue = e.target.value
@@ -21,7 +26,7 @@ export default function AddBookModal({ onClose, onAdded }) {
     const author = normalizeSpaces(form.author)
     const isbn = form.isbn.trim()
 
-    if (!title || !author || !isbn) {
+    if (!title || !author || (!isEditMode && !isbn)) {
       setError('All fields are required.')
       return
     }
@@ -33,17 +38,24 @@ export default function AddBookModal({ onClose, onAdded }) {
       setError('Author must be at most 25 characters.')
       return
     }
-    if (!/^\d{1,13}$/.test(isbn)) {
+    if (!isEditMode && !/^\d{1,13}$/.test(isbn)) {
       setError('ISBN must be a numeric value with up to 13 digits.')
       return
     }
 
-    const payload = { title, author, isbn }
+    const payload = isEditMode ? { title, author } : { title, author, isbn }
+    const editId = Number(initialBook?.id)
+    if (isEditMode && (!Number.isInteger(editId) || editId <= 0)) {
+      setError('Cannot update this book because it has an invalid ID.')
+      return
+    }
 
     setLoading(true)
     setError(null)
     try {
-      const res = await api.addBook(payload)
+      const res = isEditMode
+        ? await api.updateBook(editId, payload)
+        : await api.addBook(payload)
       onAdded(res?.data)
     } catch (e) {
       setError(e.message)
@@ -58,7 +70,7 @@ export default function AddBookModal({ onClose, onAdded }) {
         <div className={styles.header}>
           <div>
             <p className="tag" style={{ marginBottom: 4 }}>Catalogue</p>
-            <h3 className={styles.title}>Add New Book</h3>
+            <h3 className={styles.title}>{isEditMode ? 'Edit Book' : 'Add New Book'}</h3>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>
             <CloseIcon />
@@ -74,10 +86,12 @@ export default function AddBookModal({ onClose, onAdded }) {
             <label className={styles.label}>Author</label>
             <input className="input-field" placeholder="e.g. Robert C. Martin" maxLength={25} value={form.author} onChange={set('author')} />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>ISBN</label>
-            <input className="input-field" inputMode="numeric" placeholder="e.g. 9780132350884" maxLength={13} value={form.isbn} onChange={set('isbn')} />
-          </div>
+          {!isEditMode && (
+            <div className={styles.field}>
+              <label className={styles.label}>ISBN</label>
+              <input className="input-field" inputMode="numeric" placeholder="e.g. 9780132350884" maxLength={13} value={form.isbn} onChange={set('isbn')} />
+            </div>
+          )}
 
           {error && <p className={styles.error}>{error}</p>}
         </div>
@@ -86,7 +100,7 @@ export default function AddBookModal({ onClose, onAdded }) {
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
             {loading ? <span className="spinner" /> : null}
-            {loading ? 'Adding…' : 'Add Book'}
+            {loading ? (isEditMode ? 'Saving…' : 'Adding…') : (isEditMode ? 'Save Changes' : 'Add Book')}
           </button>
         </div>
       </div>
