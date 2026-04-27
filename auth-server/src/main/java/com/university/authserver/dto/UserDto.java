@@ -4,14 +4,18 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.university.shared.utils.NormalizeSpaceDeserializer;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class UserDto {
-    @JsonDeserialize(using = NormalizeSpaceDeserializer.class)
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    @Pattern(
+            regexp = "^(?!.*\\.\\.)(?!.*\\.$)(?!^\\.)[a-z0-9_.]+$",
+            message = "Username can only contain lowercase letters, numbers, periods, and underscores. It cannot start with, end with, or contain consecutive periods."
+    )
     private String username;
 
 

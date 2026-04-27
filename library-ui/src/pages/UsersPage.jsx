@@ -4,7 +4,8 @@ import styles from './UsersPage.module.css'
 
 const ROLES = ['USER', 'ADMIN', 'SUPERADMIN']
 
-const normalizeSpaces = (value) => value.replace(/\s+/g, ' ').trim()
+const USERNAME_REGEX = /^(?!.*\.\.)(?!.*\.$)(?!^\.)[a-z0-9_.]+$/
+const USERNAME_REGEX_MESSAGE = 'Username can only contain lowercase letters, numbers, periods, and underscores. It cannot start with, end with, or contain consecutive periods.'
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 
 export default function UsersPage() {
@@ -66,7 +67,7 @@ export default function UsersPage() {
     }, [])
 
     const handleCreateUser = async () => {
-        const username = normalizeSpaces(createForm.username)
+        const username = createForm.username.trim()
         const email = createForm.email.trim()
         const password = createForm.password.trim()
         const role = createForm.role
@@ -77,6 +78,10 @@ export default function UsersPage() {
         }
         if (username.length < 3 || username.length > 20) {
             setCreateError('Username must be between 3 and 20 characters.')
+            return
+        }
+        if (!USERNAME_REGEX.test(username)) {
+            setCreateError(USERNAME_REGEX_MESSAGE)
             return
         }
         if (!isValidEmail(email)) {
@@ -191,7 +196,10 @@ export default function UsersPage() {
                                 placeholder="e.g. john_doe"
                                 value={createForm.username}
                                 onChange={setCreate('username')}
+                                minLength={3}
+                                maxLength={20}
                             />
+                            <p className={styles.hint}>Use lowercase letters, numbers, periods, or underscores only.</p>
                         </div>
                         <div className={styles.field}>
                             <label className={styles.label}>Email</label>

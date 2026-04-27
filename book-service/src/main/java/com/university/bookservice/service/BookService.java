@@ -81,17 +81,9 @@ public class BookService {
     public void deleteBook(Long id, String currentUserName, String adminEmail) {
         Book existingBook = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
-
         String deletedTitle = existingBook.getTitle();
-
         bookRepository.delete(existingBook);
-        eventPublisher.publishEvent(new BookDeletedEvent(
-                id,
-                deletedTitle,
-                currentUserName,
-                adminEmail,
-                LocalDateTime.now()
-        ));
+        eventPublisher.publishEvent(new BookDeletedEvent(id, deletedTitle, currentUserName, adminEmail, LocalDateTime.now()));
     }
 
 }

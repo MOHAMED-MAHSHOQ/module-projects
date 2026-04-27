@@ -15,7 +15,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookCreateRequestDto {
-    @JsonDeserialize(using = NormalizeSpaceDeserializer.class)
     @NotBlank(message = "Title is required")
     @Size(max = 25, message = "Title must be at most 25 characters")
     private String title;

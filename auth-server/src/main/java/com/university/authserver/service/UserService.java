@@ -77,6 +77,7 @@ public class UserService {
 
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
+                .filter(user -> user.getRole() != Role.SUPERADMIN)
                 .map(
                         appUser -> {
                             UserResponseDto dto = new UserResponseDto();
