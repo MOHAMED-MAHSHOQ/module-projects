@@ -1,5 +1,6 @@
 package com.university.bookservice.service;
 
+import com.university.bookservice.constants.EmailTemplateConstants;
 import com.university.shared.dto.BookPatchRequestDto;
 import com.university.shared.dto.BookUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -23,26 +24,8 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("Library System Alert: New Book Added");
-
-            String emailBody =
-                    String.format(
-                            """
-                                    Hello Superadmin,
-                                    
-                                    A new book has been added to the library database.
-                                    
-                                    Book Details:
-                                    - Book Title: %s
-                                    - Added By Username: %s
-                                    - Added By Email: %s
-                                    - Timestamp: %s
-                                    
-                                    Regards,
-                                    Library Automated System
-                                    """,
-                            bookTitle, adminUsername, adminEmail, formattedTime);
-
+            message.setSubject(EmailTemplateConstants.NEW_BOOK_SUBJECT);
+            String emailBody = String.format(EmailTemplateConstants.NEW_BOOK_BODY, bookTitle, adminUsername, adminEmail, formattedTime);
             message.setText(emailBody);
             mailSender.send(message);
 
@@ -59,40 +42,9 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("Library System Alert: New Book Added");
-
-            String emailBody =
-                    String.format(
-                            """
-                                    Hello Superadmin,
-                                    
-                                    An existing book record has been updated in the library database.
-                                    
-                                    Target Book:
-                                    - Book ID: %d
-                                    - Original Title: %s
-                                    
-                                    New Updated Values:
-                                    - Title: %s
-                                    - Author: %s
-                                    
-                                    Action Performed By:
-                                    - Admin Username: %s
-                                    - Admin Email: %s
-                                    - Timestamp: %s
-                                    
-                                    Regards,
-                                    Library Automated System
-                                    """,
-                            bookId,
-                            bookTitle,
-                            updates.getTitle(),
-                            updates.getAuthor(),
-                            adminUsername,
-                            adminEmail,
-                            formattedTime
-                    );
-
+            message.setSubject(EmailTemplateConstants.UPDATE_BOOK_SUBJECT);
+            String emailBody = String.format(EmailTemplateConstants.UPDATE_BOOK_BODY, bookId, bookTitle, updates.getTitle(), updates.getAuthor(),
+                            adminUsername, adminEmail, formattedTime);
             message.setText(emailBody);
             mailSender.send(message);
 
@@ -108,7 +60,7 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject(String.format("Library System Alert: Book Record Patched (ID: %d)", bookId));
+            message.setSubject(String.format(EmailTemplateConstants.PATCH_BOOK_SUBJECT, bookId));
 
             StringBuilder updatedFields = new StringBuilder();
 
@@ -121,39 +73,11 @@ public class EmailService {
             if (updates.getAvailable() != null) {
                 updatedFields.append("  - Availability status changed to: ").append(updates.getAvailable()).append("\n");
             }
-
             if (updatedFields.isEmpty()) {
                 updatedFields.append("  - (No tracked fields were modified)\n");
             }
-            String emailBody =
-                    String.format(
-                            """
-                                    Hello Superadmin,
-                                    
-                                    An existing book record has been partially updated in the library database.
-                                    
-                                    Target Book:
-                                    - Book ID: %d
-                                    - Original Title: %s
-                                    
-                                    Changes Applied:
-                                    %s
-                                    Action Performed By:
-                                    - Admin Username: %s
-                                    - Admin Email: %s
-                                    - Timestamp: %s
-                                    
-                                    Regards,
-                                    Library Automated System
-                                    """,
-                            bookId,
-                            originalBookTitle,
-                            updatedFields.toString(),
-                            adminUsername,
-                            adminEmail,
-                            formattedTime
-                    );
-
+            String emailBody = String.format(EmailTemplateConstants.PATCH_BOOK_BODY, bookId, originalBookTitle, updatedFields,
+                            adminUsername, adminEmail, formattedTime);
             message.setText(emailBody);
             mailSender.send(message);
 
@@ -169,34 +93,8 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject(String.format("Library System Alert: Book Record Deleted (ID: %d)", bookId));
-
-            String emailBody =
-                    String.format(
-                            """
-                                    Hello Superadmin,
-                                    
-                                    A book record has been deleted from the library database.
-                                    
-                                    Deleted Book Details:
-                                    - Book ID: %d
-                                    - Deleted Title: %s
-                                    
-                                    Action Performed By:
-                                    - Admin Username: %s
-                                    - Admin Email: %s
-                                    - Timestamp: %s
-                                    
-                                    Regards,
-                                    Library Automated System
-                                    """,
-                            bookId,
-                            deletedTitle,
-                            adminUsername,
-                            adminEmail,
-                            formattedTime
-                    );
-
+            message.setSubject(String.format(EmailTemplateConstants.DELETE_BOOK_SUBJECT, bookId));
+            String emailBody = String.format(EmailTemplateConstants.DELETE_BOOK_BODY, bookId, deletedTitle, adminUsername, adminEmail, formattedTime);
             message.setText(emailBody);
             mailSender.send(message);
 
