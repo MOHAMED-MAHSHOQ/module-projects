@@ -9,20 +9,20 @@ import lombok.Data;
 
 @Data
 public class UserDto {
-  @JsonDeserialize(using = NormalizeSpaceDeserializer.class)
-  @NotBlank(message = "Username is required")
-  @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
-  private String username;
+    @JsonDeserialize(using = NormalizeSpaceDeserializer.class)
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    private String username;
 
 
-  @NotBlank(message = "Password is required")
-  @Size(min = 8, message = "Password must be at least 8 characters long")
-  private String password;
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    private String password;
 
-  @NotBlank(message = "Email is required")
-  @Email(message = "Please provide a valid email address")
-  private String email;
+    @NotBlank(message = "Email is required")
+    @Email(message = "Please provide a valid email address")
+    private String email;
 
-  @NotBlank(message = "Role is required")
-  private String role;
+    @NotBlank(message = "Role is required")
+    private String role;
 }

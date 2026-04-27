@@ -14,26 +14,26 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Book {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(nullable = false)
-  private String title;
+    @Column(nullable = false)
+    private String title;
 
-  @Column(nullable = false)
-  private String author;
+    @Column(nullable = false)
+    private String author;
 
-  @Column(nullable = false, unique = true)
-  private String isbn;
+    @Column(nullable = false, unique = true)
+    private String isbn;
 
-  @Column(nullable = false)
-  private boolean available;
+    @Column(nullable = false)
+    private boolean available;
 
-  public Book(String title, String author, String isbn) {
-    this.title = title;
-    this.author = author;
-    this.isbn = isbn;
-    this.available = true;
-  }
+    public Book(String title, String author, String isbn) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.available = true;
+    }
 }

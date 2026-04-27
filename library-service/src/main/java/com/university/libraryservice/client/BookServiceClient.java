@@ -21,65 +21,31 @@ public class BookServiceClient {
     }
 
     public ApiResponse<List<BookDto>> getAllBooks() {
-        return restClient.get().uri(BOOK_PATH).retrieve().body(new ParameterizedTypeReference<>() {
-        });
+        return restClient.get().uri(BOOK_PATH).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
     public ApiResponse<BookDto> getBookById(Long id) {
-        return restClient
-                .get()
-                .uri(BOOK_PATH_ID, id)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+        return restClient.get().uri(BOOK_PATH_ID, id).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
-    public ApiResponse<BookDto> addBook(
-            BookCreateRequestDto dto, String currentUserName, String adminEmail) {
-        return restClient
-                .post()
-                .uri(BOOK_PATH)
-                .header("Current-User-Name", currentUserName)
-                .header("Email", adminEmail)
-                .body(dto)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+    public ApiResponse<BookDto> addBook(BookCreateRequestDto dto, String currentUserName, String adminEmail) {
+        return restClient.post().uri(BOOK_PATH).header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail).body(dto).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
     public ApiResponse<BookDto> updateBook(Long id, BookUpdateRequestDto updateDto, String currentUserName, String adminEmail) {
-        return restClient
-                .put()
-                .uri(BOOK_PATH_ID, id)
-                .header("Current-User-Name", currentUserName)
-                .header("Email", adminEmail)
-                .body(updateDto)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+        return restClient.put().uri(BOOK_PATH_ID, id).header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail).body(updateDto).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
     public ApiResponse<BookDto> patchBook(Long id, BookPatchRequestDto patchDto, String currentUserName, String adminEmail) {
-        return restClient
-                .patch()
-                .uri(BOOK_PATH_ID, id)
-                .header("Current-User-Name", currentUserName)
-                .header("Email", adminEmail)
-                .body(patchDto)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+        return restClient.patch().uri(BOOK_PATH_ID, id).header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail).body(patchDto).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 
     public ApiResponse<Void> deleteBook(Long id, String currentUserName, String adminEmail) {
-        return restClient
-                .delete()
-                .uri(BOOK_PATH_ID, id)
-                .header("Current-User-Name", currentUserName)
-                .header("Email", adminEmail)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+        return restClient.delete().uri(BOOK_PATH_ID, id).header("Current-User-Name", currentUserName)
+                .header("Email", adminEmail).retrieve().body(new ParameterizedTypeReference<>() {});
     }
 }
 

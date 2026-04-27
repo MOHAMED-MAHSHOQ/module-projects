@@ -77,21 +77,21 @@ public class BookService {
         return bookMapper.toDto(existingBook);
     }
 
-  @Transactional
-  public void deleteBook(Long id, String currentUserName, String adminEmail) {
-    Book existingBook = bookRepository.findById(id)
-            .orElseThrow(() -> new BookNotFoundException(id));
+    @Transactional
+    public void deleteBook(Long id, String currentUserName, String adminEmail) {
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
 
-    String deletedTitle = existingBook.getTitle();
+        String deletedTitle = existingBook.getTitle();
 
-    bookRepository.delete(existingBook);
-    eventPublisher.publishEvent(new BookDeletedEvent(
-            id,
-            deletedTitle,
-            currentUserName,
-            adminEmail,
-            LocalDateTime.now()
-    ));
-  }
+        bookRepository.delete(existingBook);
+        eventPublisher.publishEvent(new BookDeletedEvent(
+                id,
+                deletedTitle,
+                currentUserName,
+                adminEmail,
+                LocalDateTime.now()
+        ));
+    }
 
 }

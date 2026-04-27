@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
-  boolean existsByIsbn(String isbn);
-
-    List<Book> getBookById(Long id);
+    boolean existsByIsbn(String isbn);
 }

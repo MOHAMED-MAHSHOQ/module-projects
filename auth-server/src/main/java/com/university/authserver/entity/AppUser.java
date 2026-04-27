@@ -13,19 +13,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUser {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(unique = true, nullable = false)
-  private String username;
+    @Column(unique = true, nullable = false)
+    private String username;
 
-  @Column(nullable = false)
-  private String password;
+    @Column(nullable = false)
+    private String password;
 
-  @Enumerated(EnumType.STRING)
-  private Role role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-  @Column(unique = true, nullable = false)
-  private String email;
+    @Column(unique = true, nullable = false)
+    private String email;
 }

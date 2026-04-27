@@ -32,34 +32,30 @@ public class BookController {
     }
 
     @PostMapping(BOOK_PATH)
-    public ResponseEntity<ApiResponse<BookDto>> addBook(@Valid @RequestBody BookCreateRequestDto dto,
-            @RequestHeader("Current-User-Name") String currentUserName,
-            @RequestHeader("Email") String adminEmail) {
+    public ResponseEntity<ApiResponse<BookDto>> addBook(@Valid @RequestBody BookCreateRequestDto dto, @RequestHeader("Current-User-Name") String currentUserName,
+                                                        @RequestHeader("Email") String adminEmail) {
         log.info("The Current Username From Service A is : {}", currentUserName);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Book added", bookService.addBook(dto, currentUserName, adminEmail)));
     }
 
     @PutMapping(BOOK_PATH_ID)
-    public ResponseEntity<ApiResponse<BookDto>> updateBook(
-            @PathVariable Long id, @Valid @RequestBody BookUpdateRequestDto updateDto,
-            @RequestHeader("Current-User-Name") String currentUserName,
-            @RequestHeader("Email") String adminEmail) {
-        return ResponseEntity.ok(new ApiResponse<>(true, "Book updated", bookService.updateBook(id, updateDto,currentUserName,adminEmail)));
+    public ResponseEntity<ApiResponse<BookDto>> updateBook(@PathVariable Long id, @Valid @RequestBody BookUpdateRequestDto updateDto,
+                                                           @RequestHeader("Current-User-Name") String currentUserName,
+                                                           @RequestHeader("Email") String adminEmail) {
+        return ResponseEntity.ok(new ApiResponse<>(true, "Book updated", bookService.updateBook(id, updateDto, currentUserName, adminEmail)));
     }
 
     @PatchMapping(BOOK_PATH_ID)
-    public ResponseEntity<ApiResponse<BookDto>> patchBook(
-            @PathVariable Long id, @Valid @RequestBody BookPatchRequestDto patchDto,
-            @RequestHeader("Current-User-Name") String currentUserName,
-            @RequestHeader("Email") String adminEmail) {
-        return ResponseEntity.ok(new ApiResponse<>(true, "Book updated", bookService.patchBook(id, patchDto,currentUserName,adminEmail)));
+    public ResponseEntity<ApiResponse<BookDto>> patchBook(@PathVariable Long id, @Valid @RequestBody BookPatchRequestDto patchDto,
+                                                          @RequestHeader("Current-User-Name") String currentUserName,
+                                                          @RequestHeader("Email") String adminEmail) {
+        return ResponseEntity.ok(new ApiResponse<>(true, "Book updated", bookService.patchBook(id, patchDto, currentUserName, adminEmail)));
     }
 
     @DeleteMapping(BOOK_PATH_ID)
-    public ResponseEntity<ApiResponse<Void>> deleteBook(
-            @PathVariable Long id, @RequestHeader("Current-User-Name") String currentUserName,
-            @RequestHeader("Email") String adminEmail) {
+    public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable Long id, @RequestHeader("Current-User-Name") String currentUserName,
+                                                        @RequestHeader("Email") String adminEmail) {
         bookService.deleteBook(id, currentUserName, adminEmail);
         return ResponseEntity.ok(new ApiResponse<>(true, "Book deleted", null));
     }

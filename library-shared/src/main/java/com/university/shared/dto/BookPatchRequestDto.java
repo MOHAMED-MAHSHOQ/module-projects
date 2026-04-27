@@ -1,4 +1,5 @@
 package com.university.shared.dto;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.university.shared.utils.NormalizeSpaceDeserializer;
 import jakarta.validation.constraints.Size;
